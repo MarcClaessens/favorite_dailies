@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class Sticky {
+public class StickyRestController {
 	
 	@GetMapping("/sticky")
 	public String get() {
@@ -18,6 +18,8 @@ public class Sticky {
 		String latest = H2DatabaseConnection.getLatestStickText();
 		if (!latest.equals(sticky)) {
 			H2DatabaseConnection.insertStickyData(sticky);
+			System.out.println(String.format("Database entry added.  New total is %d entries", H2DatabaseConnection.getEntries()));
+
 		}
 	}
 }

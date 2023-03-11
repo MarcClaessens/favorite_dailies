@@ -18,7 +18,7 @@ public class H2DatabaseConnection {
 	public static void initDb() {
 		if (!new File(DB_FILE).exists()) {
 			try (Connection c = DriverManager.getConnection(DATABASE_URL, CREDENTIAL, CREDENTIAL)) {
-				String statement = "create table if not exists stickyhist(id bigint auto_increment primary key, stickytext text not null);";
+				String statement = "CREATE TABLE IF NOT EXISTS stickyhist(id bigint auto_increment primary key, stickytext text not null);";
 				
 				try (PreparedStatement ps = c.prepareStatement(statement)) {
 					ps.execute();
@@ -31,31 +31,46 @@ public class H2DatabaseConnection {
 	}
 
 	public static String getLatestStickText() {
-		String statement = "select stickytext from stickyhist where id = (select max(id) from stickyhist)";
+		String statement = "SELECT stickytext FROM stickyhist WHERE id = (SELECT max(id) FROM stickyhist)";
 
-		try (Connection c = DriverManager.getConnection(DATABASE_URL, CREDENTIAL, CREDENTIAL)) {
-			try (PreparedStatement ps = c.prepareStatement(statement)) {
+		try (Connection c = DriverManager.getConnection(DATABASE_URL, CREDENTIAL, CREDENTIAL);
+			PreparedStatement ps = c.prepareStatement(statement)) {
 				ResultSet rs = ps.executeQuery();
 				if (rs.next()) {
 					return rs.getString(1);
 				} else {
 					return "";
 				}
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "";
 		}
 	}
+	
+	public static long getEntries() {
+		String statement = "SELECT count(*) FROM stickyhist";
+
+		try (Connection c = DriverManager.getConnection(DATABASE_URL, CREDENTIAL, CREDENTIAL);
+			PreparedStatement ps = c.prepareStatement(statement)) {
+				ResultSet rs = ps.executeQuery();
+				if (rs.next()) {
+					return rs.getLong(1);
+				} else {
+					return 0L;
+				}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0L;
+		}
+	}
 
 	public static void insertStickyData(String text) {
-		String statement = "insert into stickyhist(stickytext) values (?)";
+		String statement = "INSERT INTO stickyhist(stickytext) VALUES (?)";
 
-		try (Connection c = DriverManager.getConnection(DATABASE_URL, CREDENTIAL, CREDENTIAL)) {
-			try (PreparedStatement ps = c.prepareStatement(statement)) {
+		try (Connection c = DriverManager.getConnection(DATABASE_URL, CREDENTIAL, CREDENTIAL); 
+			PreparedStatement ps = c.prepareStatement(statement)) {
 				ps.setString(1, text);
 				ps.executeUpdate();
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
