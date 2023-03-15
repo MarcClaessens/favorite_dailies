@@ -1,31 +1,48 @@
 package favorite_dailies;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import favorite_dailies.db.H2DatabaseConnection;
+import favorite_dailies.db.StickyHist;
+
 @Controller
-public class StickyController implements InitializingBean {
+public class StickyController {
 	private String html;
+	private long lastFileChange;
 	
+
+
+	@GetMapping("/hist")
+	public String showUpdateForm(Model model) {
+		List<StickyHist> history = H2DatabaseConnection.getFullHistory();
+		model.addAttribute("hist", history);
+		return "history";
+	}
+
 	@GetMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
 	@ResponseBody
 	public String favoriteDailiesHTML() {
+		if (html == null || Main.context().getFavFile().lastModified() != lastFileChange) {
+			readFavFile();
+		}
 		return html;
 	}
-	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		String homedir = System.getProperty("user.home");
-		File favFile = new File(homedir, "Documents/favorite_comics.html");
-		if (!favFile.exists()) {
-			throw new IllegalStateException(favFile + " does not exist");
+
+	private void readFavFile() {
+		try {
+			System.out.println("Loading " + Main.context().getFavFile());
+			html = new String(Files.readString(Main.context().getFavFile().toPath()));
+			lastFileChange = Main.context().getFavFile().lastModified();
+		} catch (IOException e) {
+			throw new IllegalStateException("Could not read file "+ Main.context().getFavFile(), e);
 		}
-		html = new String(Files.readString(favFile.toPath()));		
 	}
 }
