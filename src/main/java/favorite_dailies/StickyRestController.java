@@ -25,7 +25,7 @@ public class StickyRestController {
 		if (!latest.getStickyText().equals(sticky)) {
 			H2DatabaseConnection.insertStickyData(sticky);
 			System.out.println(String.format("Database entry added.  New total is %d entries", H2DatabaseConnection.getEntries()));
-
+			
 		}
 	}
 	
@@ -34,5 +34,20 @@ public class StickyRestController {
 		if (id != null) {
 			H2DatabaseConnection.deleteHistory(id);
 		}
+	}
+	
+	@DeleteMapping("/sticky/allButLast") 
+	public void deleteAllExceptLast(Model model){
+		H2DatabaseConnection.deleteAllHistoryExceptLast();
+	}
+	
+	@GetMapping("/stickydb/export") 
+	public String exportDb() {
+		return H2DatabaseConnection.exportDb();		
+	}
+	
+	@GetMapping("/stickydb/import") 
+	public String importDb() {
+		return H2DatabaseConnection.importDb();		
 	}
 }

@@ -30,7 +30,7 @@ public class StickyController {
 	@GetMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
 	@ResponseBody
 	public String favoriteDailiesHTML() {
-		if (html == null || Main.context().getFavFile().lastModified() != lastFileChange) {
+		if (html == null || Main.context().favFile().lastModified() != lastFileChange) {
 			readFavFile();
 		}
 		return html;
@@ -38,11 +38,11 @@ public class StickyController {
 
 	private void readFavFile() {
 		try {
-			System.out.println("Loading " + Main.context().getFavFile());
-			html = new String(Files.readString(Main.context().getFavFile().toPath()));
-			lastFileChange = Main.context().getFavFile().lastModified();
+			System.out.println("Loading " + Main.context().favFile());
+			html = new String(Files.readString(Main.context().favFile().toPath()));
+			lastFileChange = Main.context().favFile().lastModified();
 		} catch (IOException e) {
-			throw new IllegalStateException("Could not read file "+ Main.context().getFavFile(), e);
+			throw new IllegalStateException("Could not read file "+ Main.context().favFile(), e);
 		}
 	}
 }

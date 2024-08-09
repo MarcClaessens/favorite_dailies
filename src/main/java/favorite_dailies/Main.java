@@ -12,28 +12,13 @@ public class Main implements InitializingBean {
 	private static AppContext INSTANCE;
 	
 	@Value("${fav.dir}")
-	private String favDir; 
+	private String favDir;
+	@Value("${db.user}")
+	private String dbUser;
+	@Value("${db.pass}")
+	private String dbCred;
 	
-	public interface AppContext {
-		File getFavFile();
-		String getH2File();
-	}
-	
-	private class AppContextImpl implements AppContext {
-		private final File favFile;
-		private final String h2File;
-		protected AppContextImpl (File favFile, String h2File) {
-			this.favFile = favFile;
-			this.h2File = h2File;
-		}
-		
-		public File getFavFile() {
-			return favFile;
-		}
-		
-		public String getH2File() {
-			return h2File;
-		}
+	public record AppContext(File favFile, String h2DbFile, String h2SqlFile, String dbUser, String dbCred) {
 	}
 
 	public static void main(String[] args) {
@@ -46,9 +31,9 @@ public class Main implements InitializingBean {
 		if (!favFile.exists()) {
 			throw new IllegalStateException(favFile + " does not exist.  Configure fav.dir in application.properties");
 		}
-		String h2Location = favDir + (favDir.endsWith("/")? "": "/") + "favorite_dailies.h2db";
-		INSTANCE = new AppContextImpl(favFile, h2Location);
-		
+		String h2DbLocation = favDir + (favDir.endsWith("/")? "": "/") + "favorite_dailies.h2db";
+		String h2SqlLocation = favDir + (favDir.endsWith("/")? "": "/") + "favorite_dailies.sql";
+		INSTANCE = new AppContext(favFile, h2DbLocation, h2SqlLocation, dbUser, dbCred);
 	}
 	
 	public static AppContext context() {
